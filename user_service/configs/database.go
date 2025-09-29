@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"user_service/models"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -46,6 +47,11 @@ func InitDB() (*gorm.DB, error) {
 	}
 
 	DB = db
-	// db.AutoMigrate(&models.User{})
+
+	err = db.AutoMigrate(&models.User{})
+	if err != nil {
+		return nil, err
+	}
+
 	return DB, nil
 }

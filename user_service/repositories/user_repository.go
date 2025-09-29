@@ -23,25 +23,25 @@ func GetAllUsers() ([]models.User, error) {
 	return users, nil
 }
 
-func GetUserByID(id int) (*models.User, error) {
+func GetUserByID(id int) (models.User, error) {
 	var user models.User
 	err := configs.DB.Where("id = ?", id).First(&user).Error
 	if err != nil {
-		return nil, err
+		return user, err
 	}
-	return &user, nil
+	return user, nil
 }
 
-func GetUserByEmail(email string) (*models.User, error) {
+func GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 	err := configs.DB.Where("email = ?", email).First(&user).Error
 	if err != nil {
-		return nil, err
+		return user, err
 	}
-	return &user, nil
+	return user, nil
 }
 
-func UpdateUser(id int, payload *models.User) error {
+func UpdateUser(id int, payload *models.UpdateUserRequest) error {
 	var user models.User
 	err := configs.DB.Where("id = ?", id).First(&user).Error
 	if err != nil {
@@ -49,8 +49,7 @@ func UpdateUser(id int, payload *models.User) error {
 	}
 
 	user.Name = payload.Name
-	user.Email = payload.Email
-	user.Password = payload.Password
+	user.Role = payload.Role
 	user.UpdatedAt = time.Now()
 
 	err = configs.DB.Save(&user).Error

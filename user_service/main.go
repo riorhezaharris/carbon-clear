@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"user_service/configs"
+	"user_service/routes"
 
 	"github.com/labstack/echo/v4"
 )
@@ -19,5 +21,10 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	e.Logger.Fatal(e.Start(":8080"))
+	routes.UserRoute(e)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	e.Logger.Fatal(e.Start(":" + port))
 }
