@@ -189,3 +189,21 @@ func DeleteUser(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, echo.Map{"message": "User deleted successfully"})
 }
+
+func GetProfile(c echo.Context) error {
+	// Get user ID from JWT token
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	userID := uint(claims["id"].(float64))
+
+	// Get user from database
+	userData, err := repositories.GetUserByID(int(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user profile"})
+	}
+
+	// Remove password from response
+	userData.Password = ""
+
+	return c.JSON(http.StatusOK, echo.Map{"message": "Profile fetched successfully", "user": userData})
+}

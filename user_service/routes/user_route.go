@@ -19,6 +19,16 @@ func UserRoute(e *echo.Echo) {
 	e.POST("/api/users/register", handlers.RegisterUser)
 	e.POST("/api/users/login", handlers.LoginUser)
 
+	// User routes with JWT authentication
+	user := e.Group("/api/users")
+	user.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(os.Getenv("USER_JWT_SECRET")),
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(JwtCustomClaims)
+		},
+	}))
+	user.GET("/profile", handlers.GetProfile)
+
 	e.POST("/admin/users/register", handlers.RegisterAdmin)
 	e.POST("/admin/users/login", handlers.LoginAdmin)
 	admin := e.Group("/admin")
