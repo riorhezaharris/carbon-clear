@@ -16,10 +16,10 @@ var DB *gorm.DB
 func InitDB() (*gorm.DB, error) {
 	var err error
 
-	// Initiate secrets and credentials
+	// Initiate secrets and credentials (optional - only for local development)
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("No .env file found, using environment variables from system")
 	}
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
