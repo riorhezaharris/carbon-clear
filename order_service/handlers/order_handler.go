@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -232,11 +233,17 @@ func (h *OrderHandler) sendCertificateGenerationMessage(order *models.Order, cer
 		return err
 	}
 
+	// Get queue name from environment variable
+	queueName := os.Getenv("CERTIFICATE_QUEUE_NAME")
+	if queueName == "" {
+		queueName = "certificate_generation"
+	}
+
 	err = h.rabbitMQChannel.Publish(
-		"",                       // exchange
-		"certificate_generation", // routing key
-		false,                    // mandatory
-		false,                    // immediate
+		"",        // exchange
+		queueName, // routing key
+		false,     // mandatory
+		false,     // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        messageBody,

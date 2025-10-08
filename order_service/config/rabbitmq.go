@@ -27,14 +27,20 @@ func ConnectRabbitMQ() {
 		log.Fatal("Failed to open RabbitMQ channel:", err)
 	}
 
+	// Get queue name from environment variable
+	queueName := os.Getenv("CERTIFICATE_QUEUE_NAME")
+	if queueName == "" {
+		queueName = "certificate_generation"
+	}
+
 	// Declare the certificate generation queue
 	_, err = ch.QueueDeclare(
-		"certificate_generation", // queue name
-		true,                     // durable
-		false,                    // delete when unused
-		false,                    // exclusive
-		false,                    // no-wait
-		nil,                      // arguments
+		queueName, // queue name
+		true,      // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
 		log.Fatal("Failed to declare certificate generation queue:", err)

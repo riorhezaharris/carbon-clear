@@ -35,7 +35,13 @@ func ConnectMongoDB() {
 	}
 
 	MongoDBClient = client
-	MongoDBDatabase = client.Database("carbon_clear_orders")
+
+	// Get database name from environment variable
+	dbName := os.Getenv("MONGODB_DATABASE")
+	if dbName == "" {
+		dbName = "carbon_clear_orders"
+	}
+	MongoDBDatabase = client.Database(dbName)
 
 	fmt.Println("Connected to MongoDB successfully")
 }

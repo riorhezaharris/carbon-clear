@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"order_service/config"
@@ -29,14 +30,20 @@ func NewCertificateService() *CertificateService {
 
 // StartCertificateConsumer starts listening for certificate generation messages
 func (s *CertificateService) StartCertificateConsumer() {
+	// Get queue name from environment variable
+	queueName := os.Getenv("CERTIFICATE_QUEUE_NAME")
+	if queueName == "" {
+		queueName = "certificate_generation"
+	}
+
 	msgs, err := s.rabbitMQChannel.Consume(
-		"certificate_generation", // queue
-		"",                       // consumer
-		true,                     // auto-ack
-		false,                    // exclusive
-		false,                    // no-local
-		false,                    // no-wait
-		nil,                      // args
+		queueName, // queue
+		"",        // consumer
+		true,      // auto-ack
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // args
 	)
 	if err != nil {
 		log.Fatal("Failed to register a consumer:", err)
