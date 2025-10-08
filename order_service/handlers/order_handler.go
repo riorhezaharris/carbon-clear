@@ -36,6 +36,17 @@ func NewOrderHandler() *OrderHandler {
 }
 
 // Checkout processes the user's cart and creates an order
+// @Summary Checkout cart
+// @Description Process checkout and create an order from cart items
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Param request body models.CheckoutRequest true "Checkout details"
+// @Success 201 {object} models.OrderResponse "Order created successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID, request body, or empty cart"
+// @Failure 500 {object} map[string]string "Failed to create order"
+// @Router /api/v1/orders/{userID}/checkout [post]
 func (h *OrderHandler) Checkout(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -142,6 +153,16 @@ func (h *OrderHandler) Checkout(c echo.Context) error {
 }
 
 // GetOrderHistory retrieves the user's order history
+// @Summary Get order history
+// @Description Retrieve all orders for a specific user
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Success 200 {array} models.OrderResponse "List of orders"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 500 {object} map[string]string "Failed to retrieve order history"
+// @Router /api/v1/orders/{userID}/history [get]
 func (h *OrderHandler) GetOrderHistory(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -175,6 +196,15 @@ func (h *OrderHandler) GetOrderHistory(c echo.Context) error {
 }
 
 // GetOrder retrieves a specific order
+// @Summary Get order by ID
+// @Description Retrieve details of a specific order
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param orderID path string true "Order ID"
+// @Success 200 {object} map[string]string "Order retrieved successfully"
+// @Failure 400 {object} map[string]string "Invalid order ID"
+// @Router /api/v1/orders/{orderID} [get]
 func (h *OrderHandler) GetOrder(c echo.Context) error {
 	orderIDStr := c.Param("orderID")
 	_, err := strconv.ParseUint(orderIDStr, 10, 32)
@@ -188,6 +218,16 @@ func (h *OrderHandler) GetOrder(c echo.Context) error {
 }
 
 // GetCertificates retrieves the user's certificates
+// @Summary Get user certificates
+// @Description Retrieve all carbon offset certificates for a user
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Success 200 {array} models.CertificateResponse "List of certificates"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 500 {object} map[string]string "Failed to retrieve certificates"
+// @Router /api/v1/orders/{userID}/certificates [get]
 func (h *OrderHandler) GetCertificates(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)

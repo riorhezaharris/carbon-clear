@@ -5,12 +5,33 @@ import (
 	"net/http"
 	"os"
 	"project_service/config"
+	_ "project_service/docs"
 	"project_service/handlers"
 	"project_service/repositories"
 	"project_service/routes"
 
 	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
+
+// @title Project Service API
+// @version 1.0
+// @description This is the Project Marketplace Service API for Carbon Clear application
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@carbonclear.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8081
+// @BasePath /
+
+// @securityDefinitions.apikey AdminAuth
+// @in header
+// @name Authorization
+// @description Admin JWT token (format: Bearer <token>)
 
 func main() {
 	// Initialize Echo
@@ -70,6 +91,9 @@ func main() {
 
 	// Set up routes
 	routes.ProjectRoute(e)
+
+	// Swagger documentation route
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Start server
 	port := os.Getenv("PORT")

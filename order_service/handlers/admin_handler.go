@@ -22,6 +22,18 @@ func NewAdminHandler() *AdminHandler {
 }
 
 // GetMonthlyReport generates a monthly order report
+// @Summary Get monthly report
+// @Description Generate a monthly order report for admin (admin only)
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security AdminAuth
+// @Param year query int false "Year"
+// @Param month query int false "Month (1-12)"
+// @Success 200 {object} models.MonthlyReport "Monthly report"
+// @Failure 400 {object} map[string]string "Invalid year or month"
+// @Failure 500 {object} map[string]string "Failed to generate monthly report"
+// @Router /api/v1/admin/reports/monthly [get]
 func (h *AdminHandler) GetMonthlyReport(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -56,6 +68,18 @@ func (h *AdminHandler) GetMonthlyReport(c echo.Context) error {
 }
 
 // GetOrdersByDateRange retrieves orders within a specific date range
+// @Summary Get orders by date range
+// @Description Retrieve orders within a specific date range (admin only)
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security AdminAuth
+// @Param start_date query string true "Start date (YYYY-MM-DD)"
+// @Param end_date query string true "End date (YYYY-MM-DD)"
+// @Success 200 {array} models.OrderResponse "List of orders"
+// @Failure 400 {object} map[string]string "Invalid date format or missing parameters"
+// @Failure 500 {object} map[string]string "Failed to retrieve orders"
+// @Router /api/v1/admin/orders/date-range [get]
 func (h *AdminHandler) GetOrdersByDateRange(c echo.Context) error {
 	startDateStr := c.QueryParam("start_date")
 	endDateStr := c.QueryParam("end_date")
@@ -100,6 +124,15 @@ func (h *AdminHandler) GetOrdersByDateRange(c echo.Context) error {
 }
 
 // GetOrderStatistics provides general order statistics
+// @Summary Get order statistics
+// @Description Get overall order statistics with growth metrics (admin only)
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security AdminAuth
+// @Success 200 {object} map[string]interface{} "Order statistics"
+// @Failure 500 {object} map[string]string "Failed to generate statistics"
+// @Router /api/v1/admin/statistics [get]
 func (h *AdminHandler) GetOrderStatistics(c echo.Context) error {
 	// Get current month statistics
 	now := time.Now()

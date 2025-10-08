@@ -28,6 +28,17 @@ func (h *ProjectHandler) SetRedisClient(client *redis.Client) {
 }
 
 // CreateProject creates a new project
+// @Summary Create a new project
+// @Description Create a new carbon offset project (admin only)
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Security AdminAuth
+// @Param request body models.CreateProjectRequest true "Project details"
+// @Success 201 {object} models.Project "Project created successfully"
+// @Failure 400 {object} map[string]string "Invalid request body"
+// @Failure 500 {object} map[string]string "Failed to create project"
+// @Router /api/v1/projects/admin [post]
 func (h *ProjectHandler) CreateProject(c echo.Context) error {
 	var req models.CreateProjectRequest
 	if err := c.Bind(&req); err != nil {
@@ -62,6 +73,17 @@ func (h *ProjectHandler) CreateProject(c echo.Context) error {
 }
 
 // GetProject retrieves a project by ID
+// @Summary Get project by ID
+// @Description Retrieve a specific project by its ID
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param id path int true "Project ID"
+// @Success 200 {object} models.Project "Project details"
+// @Failure 400 {object} map[string]string "Invalid project ID"
+// @Failure 404 {object} map[string]string "Project not found"
+// @Failure 500 {object} map[string]string "Failed to retrieve project"
+// @Router /api/v1/projects/{id} [get]
 func (h *ProjectHandler) GetProject(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -94,6 +116,16 @@ func (h *ProjectHandler) GetProject(c echo.Context) error {
 }
 
 // GetAllProjects retrieves all projects with pagination
+// @Summary Get all projects
+// @Description Retrieve all carbon offset projects with pagination
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param limit query int false "Limit number of results (max 100)" default(10)
+// @Param offset query int false "Offset for pagination" default(0)
+// @Success 200 {object} map[string]interface{} "List of projects"
+// @Failure 500 {object} map[string]string "Failed to retrieve projects"
+// @Router /api/v1/projects [get]
 func (h *ProjectHandler) GetAllProjects(c echo.Context) error {
 	// Parse pagination parameters
 	limitStr := c.QueryParam("limit")
@@ -141,6 +173,19 @@ func (h *ProjectHandler) GetAllProjects(c echo.Context) error {
 }
 
 // UpdateProject updates a project
+// @Summary Update project
+// @Description Update a project's information (admin only)
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Security AdminAuth
+// @Param id path int true "Project ID"
+// @Param request body models.UpdateProjectRequest true "Project update details"
+// @Success 200 {object} map[string]string "Project updated successfully"
+// @Failure 400 {object} map[string]string "Invalid project ID or request body"
+// @Failure 404 {object} map[string]string "Project not found"
+// @Failure 500 {object} map[string]string "Failed to update project"
+// @Router /api/v1/projects/admin/{id} [put]
 func (h *ProjectHandler) UpdateProject(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -168,6 +213,18 @@ func (h *ProjectHandler) UpdateProject(c echo.Context) error {
 }
 
 // DeleteProject soft deletes a project
+// @Summary Delete project
+// @Description Delete a project (admin only)
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Security AdminAuth
+// @Param id path int true "Project ID"
+// @Success 200 {object} map[string]string "Project deleted successfully"
+// @Failure 400 {object} map[string]string "Invalid project ID"
+// @Failure 404 {object} map[string]string "Project not found"
+// @Failure 500 {object} map[string]string "Failed to delete project"
+// @Router /api/v1/projects/admin/{id} [delete]
 func (h *ProjectHandler) DeleteProject(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -190,6 +247,16 @@ func (h *ProjectHandler) DeleteProject(c echo.Context) error {
 }
 
 // SearchProjects searches projects with filters
+// @Summary Search projects
+// @Description Search and filter carbon offset projects
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param request body models.ProjectSearchRequest true "Search filters"
+// @Success 200 {object} map[string]interface{} "Search results"
+// @Failure 400 {object} map[string]string "Invalid request body"
+// @Failure 500 {object} map[string]string "Search failed"
+// @Router /api/v1/projects/search [post]
 func (h *ProjectHandler) SearchProjects(c echo.Context) error {
 	var req models.ProjectSearchRequest
 	if err := c.Bind(&req); err != nil {
@@ -233,6 +300,14 @@ func (h *ProjectHandler) SearchProjects(c echo.Context) error {
 }
 
 // GetProjectCategories retrieves all available categories
+// @Summary Get project categories
+// @Description Retrieve all available project categories
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of categories"
+// @Failure 500 {object} map[string]string "Failed to retrieve categories"
+// @Router /api/v1/projects/categories [get]
 func (h *ProjectHandler) GetProjectCategories(c echo.Context) error {
 	// Try to get from cache first
 	cacheKey := "project:categories"
@@ -256,6 +331,14 @@ func (h *ProjectHandler) GetProjectCategories(c echo.Context) error {
 }
 
 // GetProjectRegions retrieves all available regions
+// @Summary Get project regions
+// @Description Retrieve all available project regions
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of regions"
+// @Failure 500 {object} map[string]string "Failed to retrieve regions"
+// @Router /api/v1/projects/regions [get]
 func (h *ProjectHandler) GetProjectRegions(c echo.Context) error {
 	// Try to get from cache first
 	cacheKey := "project:regions"
@@ -279,6 +362,14 @@ func (h *ProjectHandler) GetProjectRegions(c echo.Context) error {
 }
 
 // GetProjectCountries retrieves all available countries
+// @Summary Get project countries
+// @Description Retrieve all available project countries
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of countries"
+// @Failure 500 {object} map[string]string "Failed to retrieve countries"
+// @Router /api/v1/projects/countries [get]
 func (h *ProjectHandler) GetProjectCountries(c echo.Context) error {
 	// Try to get from cache first
 	cacheKey := "project:countries"

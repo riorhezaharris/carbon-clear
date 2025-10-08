@@ -227,6 +227,46 @@ The service provides the following endpoints:
 - `GET /health` - Health check endpoint
 - Project management endpoints (configured in routes)
 
+## Swagger API Documentation
+
+Interactive API documentation is available via Swagger UI.
+
+### Accessing Swagger UI
+
+When the service is running, access the Swagger documentation at:
+
+```
+http://localhost:8081/swagger/index.html
+```
+
+### Features
+
+- **Interactive API Testing**: Test all endpoints directly from the browser
+- **Request/Response Examples**: View example requests and responses
+- **Authentication**: JWT authentication for protected admin endpoints
+- **Model Schemas**: Detailed request and response models
+
+### API Categories
+
+- **Projects**: Browse, search, filter, and view carbon offset projects
+  - Get all projects (with pagination)
+  - Get project by ID
+  - Search projects with filters
+  - Get categories, regions, and countries
+  - Admin: Create, update, and delete projects (requires authentication)
+
+### Regenerating Swagger Documentation
+
+If you make changes to the API handlers, regenerate the Swagger docs:
+
+```bash
+# Install swag CLI (if not already installed)
+go install github.com/swaggo/swag/cmd/swag@latest
+
+# Generate documentation
+swag init -g main.go
+```
+
 ## Data Persistence
 
 - PostgreSQL data is persisted in the `postgres_data` volume

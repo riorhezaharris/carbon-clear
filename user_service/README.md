@@ -138,6 +138,42 @@ The service provides the following endpoints:
 - `GET /` - Health check endpoint
 - User management endpoints (configured in routes)
 
+## Swagger API Documentation
+
+Interactive API documentation is available via Swagger UI.
+
+### Accessing Swagger UI
+
+When the service is running, access the Swagger documentation at:
+
+```
+http://localhost:8080/swagger/index.html
+```
+
+### Features
+
+- **Interactive API Testing**: Test all endpoints directly from the browser
+- **Request/Response Examples**: View example requests and responses
+- **Authentication**: JWT authentication for protected endpoints
+- **Model Schemas**: Detailed request and response models
+
+### API Categories
+
+- **Users**: User registration, login, and profile management
+- **Admin**: Admin registration, login, and user management
+
+### Regenerating Swagger Documentation
+
+If you make changes to the API handlers, regenerate the Swagger docs:
+
+```bash
+# Install swag CLI (if not already installed)
+go install github.com/swaggo/swag/cmd/swag@latest
+
+# Generate documentation
+swag init -g main.go
+```
+
 ## Data Persistence
 
 - PostgreSQL data is persisted in the `postgres_data` volume

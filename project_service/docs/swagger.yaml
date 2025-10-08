@@ -1,0 +1,446 @@
+basePath: /
+definitions:
+  models.CreateProjectRequest:
+    properties:
+      available_capacity:
+        type: number
+      category:
+        type: string
+      country:
+        type: string
+      description:
+        type: string
+      image_url:
+        type: string
+      price_per_tonne:
+        type: number
+      project_developer:
+        type: string
+      project_url:
+        type: string
+      region:
+        type: string
+      title:
+        type: string
+      total_capacity:
+        type: number
+      verification_standard:
+        type: string
+    required:
+    - category
+    - country
+    - description
+    - price_per_tonne
+    - region
+    - title
+    - verification_standard
+    type: object
+  models.Project:
+    properties:
+      available_capacity:
+        type: number
+      category:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      price_per_tonne:
+        type: number
+      project_developer:
+        type: string
+      project_url:
+        type: string
+      region:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      total_capacity:
+        type: number
+      updated_at:
+        type: string
+      verification_standard:
+        type: string
+    type: object
+  models.ProjectSearchRequest:
+    properties:
+      category:
+        items:
+          type: string
+        type: array
+      country:
+        items:
+          type: string
+        type: array
+      limit:
+        type: integer
+      max_price:
+        type: number
+      min_price:
+        type: number
+      offset:
+        type: integer
+      query:
+        type: string
+      region:
+        items:
+          type: string
+        type: array
+    type: object
+  models.UpdateProjectRequest:
+    properties:
+      available_capacity:
+        type: number
+      category:
+        type: string
+      country:
+        type: string
+      description:
+        type: string
+      image_url:
+        type: string
+      price_per_tonne:
+        type: number
+      project_developer:
+        type: string
+      project_url:
+        type: string
+      region:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      total_capacity:
+        type: number
+      verification_standard:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@carbonclear.com
+    name: API Support
+  description: This is the Project Marketplace Service API for Carbon Clear application
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Project Service API
+  version: "1.0"
+paths:
+  /api/v1/projects:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all carbon offset projects with pagination
+      parameters:
+      - default: 10
+        description: Limit number of results (max 100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of projects
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve projects
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all projects
+      tags:
+      - projects
+  /api/v1/projects/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific project by its ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Project details
+          schema:
+            $ref: '#/definitions/models.Project'
+        "400":
+          description: Invalid project ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Project not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to retrieve project
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get project by ID
+      tags:
+      - projects
+  /api/v1/projects/admin:
+    post:
+      consumes:
+      - application/json
+      description: Create a new carbon offset project (admin only)
+      parameters:
+      - description: Project details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Project created successfully
+          schema:
+            $ref: '#/definitions/models.Project'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create project
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AdminAuth: []
+      summary: Create a new project
+      tags:
+      - projects
+  /api/v1/projects/admin/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a project (admin only)
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Project deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid project ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Project not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to delete project
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AdminAuth: []
+      summary: Delete project
+      tags:
+      - projects
+    put:
+      consumes:
+      - application/json
+      description: Update a project's information (admin only)
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Project update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Project updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid project ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Project not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to update project
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AdminAuth: []
+      summary: Update project
+      tags:
+      - projects
+  /api/v1/projects/categories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available project categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of categories
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve categories
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get project categories
+      tags:
+      - projects
+  /api/v1/projects/countries:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available project countries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of countries
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve countries
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get project countries
+      tags:
+      - projects
+  /api/v1/projects/regions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available project regions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of regions
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve regions
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get project regions
+      tags:
+      - projects
+  /api/v1/projects/search:
+    post:
+      consumes:
+      - application/json
+      description: Search and filter carbon offset projects
+      parameters:
+      - description: Search filters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProjectSearchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Search results
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Search failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search projects
+      tags:
+      - projects
+securityDefinitions:
+  AdminAuth:
+    description: 'Admin JWT token (format: Bearer <token>)'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

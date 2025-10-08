@@ -24,6 +24,17 @@ func NewCartHandler() *CartHandler {
 }
 
 // AddToCart adds items to the user's cart
+// @Summary Add item to cart
+// @Description Add a project to the user's shopping cart
+// @Tags cart
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Param request body models.AddToCartRequest true "Cart item details"
+// @Success 201 {object} map[string]string "Item added to cart successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID or request body"
+// @Failure 500 {object} map[string]string "Failed to add item to cart"
+// @Router /api/v1/cart/{userID}/items [post]
 func (h *CartHandler) AddToCart(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -54,6 +65,16 @@ func (h *CartHandler) AddToCart(c echo.Context) error {
 }
 
 // GetCart retrieves the user's cart
+// @Summary Get user's cart
+// @Description Retrieve all items in the user's shopping cart
+// @Tags cart
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Success 200 {array} models.CartItemResponse "List of cart items"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 500 {object} map[string]string "Failed to retrieve cart"
+// @Router /api/v1/cart/{userID} [get]
 func (h *CartHandler) GetCart(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -82,6 +103,18 @@ func (h *CartHandler) GetCart(c echo.Context) error {
 }
 
 // UpdateCartItem updates the quantity of an item in the cart
+// @Summary Update cart item
+// @Description Update the quantity of a specific item in the cart
+// @Tags cart
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Param projectID path int true "Project ID"
+// @Param request body models.AddToCartRequest true "Updated cart item details"
+// @Success 200 {object} map[string]string "Cart item updated successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID, project ID, or request body"
+// @Failure 500 {object} map[string]string "Failed to update cart item"
+// @Router /api/v1/cart/{userID}/items/{projectID} [put]
 func (h *CartHandler) UpdateCartItem(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -112,6 +145,17 @@ func (h *CartHandler) UpdateCartItem(c echo.Context) error {
 }
 
 // RemoveFromCart removes an item from the cart
+// @Summary Remove item from cart
+// @Description Remove a specific item from the user's cart
+// @Tags cart
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Param projectID path int true "Project ID"
+// @Success 200 {object} map[string]string "Item removed from cart successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID or project ID"
+// @Failure 500 {object} map[string]string "Failed to remove item from cart"
+// @Router /api/v1/cart/{userID}/items/{projectID} [delete]
 func (h *CartHandler) RemoveFromCart(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -133,6 +177,16 @@ func (h *CartHandler) RemoveFromCart(c echo.Context) error {
 }
 
 // ClearCart clears all items from the user's cart
+// @Summary Clear cart
+// @Description Clear all items from the user's cart
+// @Tags cart
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Success 200 {object} map[string]string "Cart cleared successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 500 {object} map[string]string "Failed to clear cart"
+// @Router /api/v1/cart/{userID} [delete]
 func (h *CartHandler) ClearCart(c echo.Context) error {
 	userIDStr := c.Param("userID")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)

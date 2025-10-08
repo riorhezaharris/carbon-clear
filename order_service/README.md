@@ -93,6 +93,57 @@ docker-compose logs -f order-service
 - **MongoDB**: localhost:27017
 - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 
+## Swagger API Documentation
+
+Interactive API documentation is available via Swagger UI.
+
+### Accessing Swagger UI
+
+When the service is running, access the Swagger documentation at:
+
+```
+http://localhost:8080/swagger/index.html
+```
+
+### Features
+
+- **Interactive API Testing**: Test all endpoints directly from the browser
+- **Request/Response Examples**: View example requests and responses
+- **Authentication**: JWT authentication for protected admin endpoints
+- **Model Schemas**: Detailed request and response models
+
+### API Categories
+
+- **Cart**: Shopping cart management
+  - Add items to cart
+  - Get cart items
+  - Update cart item quantity
+  - Remove items from cart
+  - Clear cart
+  
+- **Orders**: Order processing and management
+  - Checkout cart and create order
+  - Get order history
+  - Get order details
+  - Get user certificates
+  
+- **Admin**: Administrative functions (requires authentication)
+  - Get monthly reports
+  - Get orders by date range
+  - Get order statistics with growth metrics
+
+### Regenerating Swagger Documentation
+
+If you make changes to the API handlers, regenerate the Swagger docs:
+
+```bash
+# Install swag CLI (if not already installed)
+go install github.com/swaggo/swag/cmd/swag@latest
+
+# Generate documentation
+swag init -g main.go
+```
+
 ## Data Persistence
 
 - MongoDB data is persisted in the `mongodb_data` volume

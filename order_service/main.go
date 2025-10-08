@@ -5,13 +5,39 @@ import (
 	"os"
 
 	"order_service/config"
+	_ "order_service/docs"
 	"order_service/routes"
 	"order_service/services"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
+
+// @title Order Service API
+// @version 1.0
+// @description This is the Order and Cart Service API for Carbon Clear application
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@carbonclear.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apikey UserAuth
+// @in header
+// @name Authorization
+// @description User JWT token (format: Bearer <token>)
+
+// @securityDefinitions.apikey AdminAuth
+// @in header
+// @name Authorization
+// @description Admin JWT token (format: Bearer <token>)
 
 func main() {
 	// Load environment variables
@@ -48,6 +74,9 @@ func main() {
 
 	// Routes
 	routes.SetupRoutes(e)
+
+	// Swagger documentation route
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Start server
 	port := os.Getenv("PORT")

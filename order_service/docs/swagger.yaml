@@ -1,0 +1,559 @@
+basePath: /
+definitions:
+  models.AddToCartRequest:
+    properties:
+      project_id:
+        type: integer
+      tonnes:
+        type: number
+    required:
+    - project_id
+    - tonnes
+    type: object
+  models.CartItemResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      project_id:
+        type: integer
+      tonnes:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.CertificateResponse:
+    properties:
+      certificate_url:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      order_id:
+        type: string
+      project_id:
+        type: integer
+      status:
+        type: string
+      tonnes:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.CheckoutRequest:
+    properties:
+      payment_method:
+        type: string
+    required:
+    - payment_method
+    type: object
+  models.MonthlyReport:
+    properties:
+      month:
+        type: string
+      orders:
+        items:
+          $ref: '#/definitions/models.OrderResponse'
+        type: array
+      total_orders:
+        type: integer
+      total_revenue:
+        type: number
+      total_tonnes:
+        type: number
+      year:
+        type: integer
+    type: object
+  models.OrderResponse:
+    properties:
+      certificate_url:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      payment_id:
+        type: string
+      price_per_tonne:
+        type: number
+      project_id:
+        type: integer
+      status:
+        type: string
+      tonnes:
+        type: number
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@carbonclear.com
+    name: API Support
+  description: This is the Order and Cart Service API for Carbon Clear application
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Order Service API
+  version: "1.0"
+paths:
+  /api/v1/admin/orders/date-range:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve orders within a specific date range (admin only)
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of orders
+          schema:
+            items:
+              $ref: '#/definitions/models.OrderResponse'
+            type: array
+        "400":
+          description: Invalid date format or missing parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to retrieve orders
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AdminAuth: []
+      summary: Get orders by date range
+      tags:
+      - admin
+  /api/v1/admin/reports/monthly:
+    get:
+      consumes:
+      - application/json
+      description: Generate a monthly order report for admin (admin only)
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        type: integer
+      - description: Month (1-12)
+        in: query
+        name: month
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly report
+          schema:
+            $ref: '#/definitions/models.MonthlyReport'
+        "400":
+          description: Invalid year or month
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to generate monthly report
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AdminAuth: []
+      summary: Get monthly report
+      tags:
+      - admin
+  /api/v1/admin/statistics:
+    get:
+      consumes:
+      - application/json
+      description: Get overall order statistics with growth metrics (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Order statistics
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to generate statistics
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - AdminAuth: []
+      summary: Get order statistics
+      tags:
+      - admin
+  /api/v1/cart/{userID}:
+    delete:
+      consumes:
+      - application/json
+      description: Clear all items from the user's cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cart cleared successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to clear cart
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Clear cart
+      tags:
+      - cart
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all items in the user's shopping cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of cart items
+          schema:
+            items:
+              $ref: '#/definitions/models.CartItemResponse'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to retrieve cart
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user's cart
+      tags:
+      - cart
+  /api/v1/cart/{userID}/items:
+    post:
+      consumes:
+      - application/json
+      description: Add a project to the user's shopping cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Cart item details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddToCartRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Item added to cart successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid user ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to add item to cart
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add item to cart
+      tags:
+      - cart
+  /api/v1/cart/{userID}/items/{projectID}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a specific item from the user's cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item removed from cart successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid user ID or project ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to remove item from cart
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove item from cart
+      tags:
+      - cart
+    put:
+      consumes:
+      - application/json
+      description: Update the quantity of a specific item in the cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: integer
+      - description: Updated cart item details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddToCartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cart item updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid user ID, project ID, or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to update cart item
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update cart item
+      tags:
+      - cart
+  /api/v1/orders/{orderID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific order
+      parameters:
+      - description: Order ID
+        in: path
+        name: orderID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Order retrieved successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid order ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get order by ID
+      tags:
+      - orders
+  /api/v1/orders/{userID}/certificates:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all carbon offset certificates for a user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of certificates
+          schema:
+            items:
+              $ref: '#/definitions/models.CertificateResponse'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to retrieve certificates
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user certificates
+      tags:
+      - orders
+  /api/v1/orders/{userID}/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Process checkout and create an order from cart items
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Checkout details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckoutRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Order created successfully
+          schema:
+            $ref: '#/definitions/models.OrderResponse'
+        "400":
+          description: Invalid user ID, request body, or empty cart
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create order
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Checkout cart
+      tags:
+      - orders
+  /api/v1/orders/{userID}/history:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all orders for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of orders
+          schema:
+            items:
+              $ref: '#/definitions/models.OrderResponse'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to retrieve order history
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get order history
+      tags:
+      - orders
+securityDefinitions:
+  AdminAuth:
+    description: 'Admin JWT token (format: Bearer <token>)'
+    in: header
+    name: Authorization
+    type: apiKey
+  UserAuth:
+    description: 'User JWT token (format: Bearer <token>)'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
