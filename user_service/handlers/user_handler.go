@@ -13,6 +13,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type JwtCustomClaims struct {
+	UserID uint   `json:"user_id"`
+	Role   string `json:"role"`
+	jwt.RegisteredClaims
+}
+
 // RegisterUser godoc
 // @Summary Register a new user
 // @Description Register a new user account
@@ -85,9 +91,9 @@ func LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid role"})
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   user.ID,
-		"role": user.Role,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaims{
+		UserID: user.ID,
+		Role:   user.Role,
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("USER_JWT_SECRET")))
@@ -170,9 +176,9 @@ func LoginAdmin(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid role"})
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   user.ID,
-		"role": user.Role,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaims{
+		UserID: user.ID,
+		Role:   user.Role,
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("ADMIN_JWT_SECRET")))
@@ -296,8 +302,8 @@ func DeleteUser(c echo.Context) error {
 func GetProfile(c echo.Context) error {
 	// Get user ID from JWT token
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	userID := uint(claims["id"].(float64))
+	claims := user.Claims.(*JwtCustomClaims)
+	userID := claims.UserID
 
 	// Get user from database
 	userData, err := repositories.GetUserByID(int(userID))

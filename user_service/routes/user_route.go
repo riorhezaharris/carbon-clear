@@ -9,12 +9,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type JwtCustomClaims struct {
-	UserID uint   `json:"user_id"`
-	Role   string `json:"role"`
-	jwt.RegisteredClaims
-}
-
 func UserRoute(e *echo.Echo) {
 	e.POST("/api/users/register", handlers.RegisterUser)
 	e.POST("/api/users/login", handlers.LoginUser)
@@ -24,7 +18,7 @@ func UserRoute(e *echo.Echo) {
 	user.Use(echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(os.Getenv("USER_JWT_SECRET")),
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(JwtCustomClaims)
+			return new(handlers.JwtCustomClaims)
 		},
 	}))
 	user.GET("/profile", handlers.GetProfile)
@@ -35,7 +29,7 @@ func UserRoute(e *echo.Echo) {
 	admin.Use(echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(os.Getenv("ADMIN_JWT_SECRET")),
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(JwtCustomClaims)
+			return new(handlers.JwtCustomClaims)
 		},
 	}))
 	admin.GET("/users", handlers.GetAllUsers)
