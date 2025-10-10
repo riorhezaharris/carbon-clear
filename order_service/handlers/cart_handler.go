@@ -110,7 +110,7 @@ func (h *CartHandler) GetCart(c echo.Context) error {
 // @Produce json
 // @Param userID path int true "User ID"
 // @Param projectID path int true "Project ID"
-// @Param request body models.AddToCartRequest true "Updated cart item details"
+// @Param request body models.UpdateCartItemRequest true "Updated cart item details"
 // @Success 200 {object} map[string]string "Cart item updated successfully"
 // @Failure 400 {object} map[string]string "Invalid user ID, project ID, or request body"
 // @Failure 500 {object} map[string]string "Failed to update cart item"
@@ -128,7 +128,7 @@ func (h *CartHandler) UpdateCartItem(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid project ID"})
 	}
 
-	var req models.AddToCartRequest
+	var req models.UpdateCartItemRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}

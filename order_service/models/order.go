@@ -47,6 +47,10 @@ type AddToCartRequest struct {
 	Tonnes    float64 `json:"tonnes" validate:"required,gt=0"`
 }
 
+type UpdateCartItemRequest struct {
+	Tonnes float64 `json:"tonnes" validate:"required,gt=0"`
+}
+
 type CheckoutRequest struct {
 	PaymentMethod string `json:"payment_method" validate:"required"`
 }

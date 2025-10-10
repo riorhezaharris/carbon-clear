@@ -15,6 +15,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/streadway/amqp"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type OrderHandler struct {
@@ -202,19 +204,45 @@ func (h *OrderHandler) GetOrderHistory(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param orderID path string true "Order ID"
-// @Success 200 {object} map[string]string "Order retrieved successfully"
+// @Success 200 {object} models.OrderResponse "Order retrieved successfully"
 // @Failure 400 {object} map[string]string "Invalid order ID"
+// @Failure 404 {object} map[string]string "Order not found"
+// @Failure 500 {object} map[string]string "Failed to retrieve order"
 // @Router /api/v1/orders/{orderID} [get]
 func (h *OrderHandler) GetOrder(c echo.Context) error {
 	orderIDStr := c.Param("orderID")
-	_, err := strconv.ParseUint(orderIDStr, 10, 32)
+
+	// Convert string to MongoDB ObjectID
+	objectID, err := primitive.ObjectIDFromHex(orderIDStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid order ID format"})
 	}
 
-	// Convert to ObjectID (this is a simplified approach)
-	// In a real implementation, you'd need proper ObjectID conversion
-	return c.JSON(http.StatusOK, map[string]string{"message": "Order retrieved successfully"})
+	// Retrieve order from database
+	order, err := h.orderRepo.GetOrderByID(objectID)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "Order not found"})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve order"})
+	}
+
+	// Convert to response
+	orderResponse := models.OrderResponse{
+		ID:             order.ID,
+		UserID:         order.UserID,
+		ProjectID:      order.ProjectID,
+		Tonnes:         order.Tonnes,
+		PricePerTonne:  order.PricePerTonne,
+		TotalAmount:    order.TotalAmount,
+		Status:         order.Status,
+		PaymentID:      order.PaymentID,
+		CertificateURL: order.CertificateURL,
+		CreatedAt:      order.CreatedAt,
+		UpdatedAt:      order.UpdatedAt,
+	}
+
+	return c.JSON(http.StatusOK, orderResponse)
 }
 
 // GetCertificates retrieves the user's certificates

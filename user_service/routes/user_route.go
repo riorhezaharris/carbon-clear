@@ -29,9 +29,9 @@ func UserRoute(e *echo.Echo) {
 	}))
 	user.GET("/profile", handlers.GetProfile)
 
-	e.POST("/admin/users/register", handlers.RegisterAdmin)
-	e.POST("/admin/users/login", handlers.LoginAdmin)
-	admin := e.Group("/admin")
+	e.POST("/api/admin/users/register", handlers.RegisterAdmin)
+	e.POST("/api/admin/users/login", handlers.LoginAdmin)
+	admin := e.Group("/api/admin")
 	admin.Use(echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(os.Getenv("ADMIN_JWT_SECRET")),
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
