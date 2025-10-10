@@ -1,0 +1,270 @@
+version: '3.8'
+
+networks:
+  carbon-clear-network:
+    driver: bridge
+
+volumes:
+  postgres_user_data:
+  postgres_project_data:
+  mongo_order_data:
+  rabbitmq_data:
+  elasticsearch_data:
+  redis_data:
+
+services:
+  # ===== DATABASES =====
+  
+  # PostgreSQL for User Service
+  postgres_user:
+    image: postgres:15-alpine
+    container_name: carbon-clear-postgres-user
+    environment:
+      POSTGRES_DB: user_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_user_data:/var/lib/postgresql/data
+      - ./user_service/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - carbon-clear-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for Project Service
+  postgres_project:
+    image: postgres:15-alpine
+    container_name: carbon-clear-postgres-project
+    environment:
+      POSTGRES_DB: project_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_project_data:/var/lib/postgresql/data
+      - ./project_service/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - carbon-clear-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB for Order Service
+  mongodb:
+    image: mongo:7.0
+    container_name: carbon-clear-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: order_service_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_order_data:/data/db
+      - ./order_service/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - carbon-clear-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== MESSAGE QUEUE =====
+  
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: carbon-clear-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - carbon-clear-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== CACHE & SEARCH =====
+  
+  redis:
+    image: redis:7-alpine
+    container_name: carbon-clear-redis
+    command: redis-server --requirepass redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - carbon-clear-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: carbon-clear-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - carbon-clear-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== MICROSERVICES =====
+  
+  # User Service
+  user_service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    container_name: carbon-clear-user-service
+    environment:
+      - PORT=8082
+      - DB_HOST=postgres_user
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=user_service_db
+      - USER_JWT_SECRET=${USER_JWT_SECRET:-user-secret-key}
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET:-admin-secret-key}
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres_user:
+        condition: service_healthy
+    networks:
+      - carbon-clear-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Project Service
+  project_service:
+    build:
+      context: ./project_service
+      dockerfile: Dockerfile
+    container_name: carbon-clear-project-service
+    environment:
+      - PORT=8081
+      - DB_HOST=postgres_project
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=project_service_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis123
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET:-admin-secret-key}
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres_project:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - carbon-clear-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Order Service
+  order_service:
+    build:
+      context: ./order_service
+      dockerfile: Dockerfile
+    container_name: carbon-clear-order-service
+    environment:
+      - PORT=8080
+      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017
+      - MONGODB_DATABASE=order_service_db
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672/
+      - USER_JWT_SECRET=${USER_JWT_SECRET:-user-secret-key}
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET:-admin-secret-key}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - carbon-clear-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/swagger/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # API Gateway
+  api_gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    container_name: carbon-clear-api-gateway
+    environment:
+      - PORT=8000
+      - USER_SERVICE_URL=http://user_service:8082
+      - PROJECT_SERVICE_URL=http://project_service:8081
+      - ORDER_SERVICE_URL=http://order_service:8080
+      - USER_JWT_SECRET=${USER_JWT_SECRET:-user-secret-key}
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET:-admin-secret-key}
+      - RATE_LIMIT_PER_MIN=100
+    ports:
+      - "8000:8000"
+    depends_on:
+      user_service:
+        condition: service_healthy
+      project_service:
+        condition: service_healthy
+      order_service:
+        condition: service_healthy
+    networks:
+      - carbon-clear-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+

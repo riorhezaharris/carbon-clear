@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carbon-clear-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - USER_SERVICE_URL=http://user_service:8082
+      - PROJECT_SERVICE_URL=http://project_service:8081
+      - ORDER_SERVICE_URL=http://order_service:8080
+      - USER_JWT_SECRET=${USER_JWT_SECRET}
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET}
+      - RATE_LIMIT_PER_MIN=100
+    networks:
+      - carbon-clear-network
+    depends_on:
+      - user_service
+      - project_service
+      - order_service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  carbon-clear-network:
+    external: true
+
